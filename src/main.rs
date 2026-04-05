@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 use anyhow::Result;
 use winit::event_loop::{ControlFlow, EventLoop};
 

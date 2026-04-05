@@ -2,6 +2,7 @@
     "conventionalCommits.scopes": [
         "Contributions",
         "CONTRIBUTING",
-        "VULKAN"
+        "VULKAN",
+        "ALL"
     ]
 }
