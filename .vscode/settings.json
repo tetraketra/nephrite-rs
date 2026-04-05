@@ -1,6 +1,7 @@
 {
     "conventionalCommits.scopes": [
         "Contributions",
-        "CONTRIBUTING"
+        "CONTRIBUTING",
+        "VULKAN"
     ]
 }

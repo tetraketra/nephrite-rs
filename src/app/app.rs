@@ -7,14 +7,12 @@ use winit::{
 
 use crate::vulkan::Context;
 
-#[allow(unused)]
 #[derive(Debug)]
 enum AppState {
     Uninitialized,
     Initialized { window: Window, context: Context },
 }
 
-#[allow(unused)]
 #[derive(Debug)]
 pub struct App {
     state: AppState,
