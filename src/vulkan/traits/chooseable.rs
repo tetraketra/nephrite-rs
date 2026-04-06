@@ -9,14 +9,14 @@ use vulkanalia::{
 #[error("Missing {0}.")]
 pub struct SuitabilityError(pub &'static str);
 
-pub trait ChooseablePhysicalDevice {
+pub trait Chooseable {
     unsafe fn supports_requirements(
         self,
         instance: &Instance,
     ) -> Result<()>;
 }
 
-impl ChooseablePhysicalDevice for vk::PhysicalDevice {
+impl Chooseable for vk::PhysicalDevice {
     unsafe fn supports_requirements(
         self,
         instance: &Instance,

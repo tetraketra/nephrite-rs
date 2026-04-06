@@ -8,7 +8,7 @@ use winit::window::Window;
 
 use crate::vulkan::{
     consts,
-    context::traits::{Newable, Pickable},
+    traits::{Newable, Pickable},
 };
 
 #[derive(Clone, Debug, Default)]

@@ -2,13 +2,15 @@ use std::{collections::HashSet, ffi::CStr, os::raw::c_void};
 
 use anyhow::{Context as _Ctx, Result};
 use tap::Pipe;
-use vulkanalia::{prelude::v1_4::*, window as vk_window};
+use vulkanalia::{
+    Instance,
+    prelude::v1_4::*,
+    vk::{self},
+    window as vk_window,
+};
 use winit::window::Window;
 
-use crate::vulkan::{
-    consts,
-    context::{context::ContextData, device::ChooseablePhysicalDevice},
-};
+use crate::vulkan::consts;
 
 pub trait Newable {
     fn new(
@@ -94,34 +96,6 @@ impl Newable for Instance {
         let instance = unsafe { entry.create_instance(&info, None) }.with_context(|| "Failed to create instance")?;
 
         Ok(instance)
-    }
-}
-
-pub trait Pickable {
-    unsafe fn pick_first_physical_device(
-        &self,
-        data: &mut ContextData,
-    ) -> Result<()>;
-}
-
-impl Pickable for Instance {
-    unsafe fn pick_first_physical_device(
-        &self,
-        data: &mut ContextData,
-    ) -> Result<()> {
-        for physical_device in self.enumerate_physical_devices()? {
-            let properties = self.get_physical_device_properties(physical_device);
-
-            if let Err(error) = physical_device.supports_requirements(self) {
-                log::warn!("Skipping phyisical device (`{}`): {}", properties.device_name, error);
-            } else {
-                log::info!("Selected physical device (`{}`)", properties.device_name);
-                data.physical_device = physical_device;
-                return Ok(());
-            }
-        }
-
-        Err(anyhow::anyhow!("Failed to find suitable physical device"))
     }
 }
 

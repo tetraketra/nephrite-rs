@@ -1,5 +1,3 @@
 pub mod context;
-pub mod device;
-pub mod traits;
 
-pub use context::Context;
+pub use context::{Context, ContextData};
