@@ -1,9 +1,9 @@
-use anyhow::{Context as _Ctx, Result};
+use image::GenericImageView;
 use winit::{
     application::ApplicationHandler,
     event::WindowEvent,
     event_loop::ActiveEventLoop,
-    window::{Window, WindowId},
+    window::{Icon, Window, WindowId},
 };
 
 use crate::vulkan::Context;
@@ -36,7 +36,31 @@ impl ApplicationHandler for App {
         event_loop: &ActiveEventLoop,
     ) {
         if let AppState::Uninitialized = self.state {
-            let window = match event_loop.create_window(Window::default_attributes()) {
+            let icon_bytes = include_bytes!("../../assets/icon_jade_1.png");
+            let icon_mem = match image::load_from_memory(icon_bytes) {
+                Ok(i) => i,
+                Err(e) => {
+                    log::error!("Failed to load icon from memory: {:#}", e);
+                    event_loop.exit();
+                    return;
+                }
+            };
+            let (width, height) = icon_mem.dimensions();
+            let icon_rgba = icon_mem.to_rgba8().into_raw();
+            let icon = match Icon::from_rgba(icon_rgba, width, height) {
+                Ok(i) => Some(i),
+                Err(e) => {
+                    log::error!("Failed to load icon from memory: {:#}", e);
+                    event_loop.exit();
+                    return;
+                }
+            };
+
+            let window = match event_loop.create_window(
+                Window::default_attributes()
+                    .with_title("Nephrite")
+                    .with_window_icon(icon),
+            ) {
                 Ok(w) => w,
                 Err(e) => {
                     log::error!("Failed to create window: {:#}", e);
