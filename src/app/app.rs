@@ -1,3 +1,4 @@
+use anyhow::{Context as _Ctx, Result};
 use winit::{
     application::ApplicationHandler,
     event::WindowEvent,
@@ -10,7 +11,10 @@ use crate::vulkan::Context;
 #[derive(Debug)]
 enum AppState {
     Uninitialized,
-    Initialized { window: Window, context: Context },
+    Initialized {
+        window:  Window,
+        context: Context,
+    },
 }
 
 #[derive(Debug)]
@@ -31,13 +35,24 @@ impl ApplicationHandler for App {
         &mut self,
         event_loop: &ActiveEventLoop,
     ) {
-        let window = event_loop
-            .create_window(Window::default_attributes().with_title("Nephrite Project"))
-            .expect("Failed to create window.");
+        if let AppState::Uninitialized = self.state {
+            let window = match event_loop.create_window(Window::default_attributes()) {
+                Ok(w) => w,
+                Err(e) => {
+                    log::error!("Failed to create window: {:#}", e);
+                    event_loop.exit();
+                    return;
+                }
+            };
 
-        let context = unsafe { Context::create(&window).expect("Failed to create Vulkan context.") };
-
-        self.state = AppState::Initialized { window, context };
+            match unsafe { Context::create(&window) } {
+                Ok(context) => self.state = AppState::Initialized { window, context },
+                Err(e) => {
+                    log::error!("Application failed to start: {:#}", e);
+                    event_loop.exit();
+                }
+            }
+        };
     }
 
     fn window_event(

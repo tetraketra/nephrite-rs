@@ -1,4 +1,5 @@
-#![cfg_attr(debug_assertions, allow(unused))]
+// #![cfg_attr(debug_assertions, allow(unused))]
+#![allow(unsafe_op_in_unsafe_fn)]
 
 use anyhow::Result;
 use winit::event_loop::{ControlFlow, EventLoop};
