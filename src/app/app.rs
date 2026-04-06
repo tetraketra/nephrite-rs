@@ -31,6 +31,15 @@ impl Default for App {
 }
 
 impl ApplicationHandler for App {
+    fn exiting(
+        &mut self,
+        _event_loop: &ActiveEventLoop,
+    ) {
+        if let AppState::Initialized { context, .. } = &mut self.state {
+            unsafe { context.destroy() };
+        }
+    }
+
     fn resumed(
         &mut self,
         event_loop: &ActiveEventLoop,
@@ -87,11 +96,11 @@ impl ApplicationHandler for App {
     ) {
         match &self.state {
             AppState::Initialized { window, .. } => match event {
+                WindowEvent::RedrawRequested => window.request_redraw(),
                 WindowEvent::CloseRequested => {
                     log::info!("Window was closed via close button; exiting.");
                     event_loop.exit();
                 }
-                WindowEvent::RedrawRequested => window.request_redraw(),
                 _ => (),
             },
             _ => {}
