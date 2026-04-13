@@ -28,7 +28,7 @@ impl Context {
     pub unsafe fn create(window: &Window) -> Result<Self> {
         let loader = LibloadingLoader::new(LIBRARY).with_context(|| "Failed to create loader.")?;
         let entry = Entry::new(loader)
-            .map_err(|b| anyhow::anyhow!("{}", b))
+            .map_err(|e| anyhow::anyhow!("{:?}", e))
             .with_context(|| "Failed to create Vulkan entrypoint.")?;
         let instance = Instance::new(window, &entry).with_context(|| "Failed to create Vulkan instance.")?;
         let mut data = ContextData::default();
