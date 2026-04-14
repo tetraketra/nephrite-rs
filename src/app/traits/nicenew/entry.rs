@@ -9,7 +9,7 @@ use crate::app::traits::nicenew::NiceNew;
 impl<'a> NiceNew<'a> for Entry {
     type Args = ();
 
-    fn nicenew(_: Self::Args) -> Result<Self> {
+    fn nice_new(_: Self::Args) -> Result<Self> {
         let loader = unsafe { LibloadingLoader::new(LIBRARY) }
             // forces a break
             .with_context(|| "Failed to create Vulkan loader")?;

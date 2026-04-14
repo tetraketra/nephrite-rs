@@ -36,14 +36,13 @@ impl Window<Uninitialized, ()> {
         let icon_mem = image::load_from_memory(icon_bytes)
             .inspect_err(|e| event_loop.exit())
             .with_context(|| "Failed to load app icon asset")?;
-
         let (width, height) = icon_mem.dimensions();
         let icon_rgba = icon_mem.to_rgba8().into_raw();
         let icon = Icon::from_rgba(icon_rgba, width, height)
             .inspect_err(|e| event_loop.exit())
             .with_context(|| "Failed to turn app icon asset into icon")?;
 
-        let winitwindow = event_loop
+        let window = event_loop
             .create_window(
                 WinitWindow::default_attributes()
                     .with_title("Nephrite")
@@ -53,7 +52,7 @@ impl Window<Uninitialized, ()> {
             .with_context(|| "Failed to create window")?;
 
         Ok(Window {
-            data: WindowData { window: winitwindow },
+            data: WindowData { window },
 
             _marker: PhantomData,
         })

@@ -22,7 +22,7 @@ pub struct NNInstance<'a> {
 impl<'a> NiceNew<'a> for Instance {
     type Args = NNInstance<'a>;
 
-    fn nicenew(args: Self::Args) -> Result<Self> {
+    fn nice_new(args: Self::Args) -> Result<Self> {
         let application_info = vk::ApplicationInfo::builder()
             .application_name(b"Nephrite\0")
             .application_version(vk::make_version(1, 4, 0))

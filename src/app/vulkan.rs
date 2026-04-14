@@ -36,8 +36,8 @@ impl<S: State, D: Default> Default for Vulkan<S, D> {
 impl Vulkan<Uninitialized, ()> {
     pub fn initialize(window: &Window<Initialized, WindowData>) -> Result<Vulkan<Initialized, VulkanData>> {
         let mut messenger = DebugUtilsMessengerEXT::default();
-        let entry = Entry::nicenew(()).with_context(|| "Failed to create Vulkan entry")?;
-        let instance = Instance::nicenew(NNInstance {
+        let entry = Entry::nice_new(()).with_context(|| "Failed to create Vulkan entry")?;
+        let instance = Instance::nice_new(NNInstance {
             window:    &window.data.window,
             entry:     &entry,
             messenger: &mut messenger,

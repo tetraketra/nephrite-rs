@@ -7,7 +7,7 @@ use anyhow::Result;
 pub trait NiceNew<'a> {
     type Args;
 
-    fn nicenew(args: Self::Args) -> Result<Self>
+    fn nice_new(args: Self::Args) -> Result<Self>
     where
         Self: Sized;
 }
