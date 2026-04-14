@@ -5,35 +5,32 @@ use tap::Pipe;
 use vulkanalia::{
     Instance,
     prelude::v1_4::*,
-    vk::{self},
+    vk::{self, ExtDebugUtilsExtensionInstanceCommands},
     window as vk_window,
 };
+use vulkanalia_sys::DebugUtilsMessengerEXT;
 use winit::window::Window;
 
-use crate::vulkan::consts;
+use crate::app::{consts, traits::nicenew::NiceNew};
 
-pub trait Newable {
-    fn new(
-        window: &Window,
-        entry: &Entry,
-    ) -> Result<Self>
-    where
-        Self: Sized;
+pub struct NNInstance<'a> {
+    pub window:    &'a Window,
+    pub entry:     &'a Entry,
+    pub messenger: &'a mut DebugUtilsMessengerEXT,
 }
 
-impl Newable for Instance {
-    fn new(
-        window: &Window,
-        entry: &Entry,
-    ) -> Result<Instance> {
+impl<'a> NiceNew<'a> for Instance {
+    type Args = NNInstance<'a>;
+
+    fn nicenew(args: Self::Args) -> Result<Self> {
         let application_info = vk::ApplicationInfo::builder()
-            .application_name(b"Nephrite Project\0")
+            .application_name(b"Nephrite\0")
             .application_version(vk::make_version(1, 4, 0))
             .engine_name(b"Nephrite\0")
             .engine_version(vk::make_version(1, 0, 0))
             .api_version(vk::make_version(1, 4, 0));
 
-        let _available_layers = unsafe { entry.enumerate_instance_layer_properties() }
+        let _available_layers = unsafe { args.entry.enumerate_instance_layer_properties() }
             .with_context(|| "Failed to enumerate instance layer properties")?
             .iter()
             .map(|l| l.layer_name)
@@ -52,17 +49,23 @@ impl Newable for Instance {
             Vec::new()
         };
 
-        let is_macos_portable = cfg!(target_os = "macos") && entry.version()? >= consts::MACOS_PORTABILITY_VERSION;
+        let is_macos_portable =
+            cfg!(target_os = "macos") && args.entry.version()? >= consts::MACOS_PORTABILITY_VERSION;
         let macos_extensions = [
             vk::KHR_GET_PHYSICAL_DEVICE_PROPERTIES2_EXTENSION.name.as_ptr(),
             vk::KHR_PORTABILITY_ENUMERATION_EXTENSION.name.as_ptr(),
         ];
 
-        let extensions = vk_window::get_required_instance_extensions(window)
+        let extensions = vk_window::get_required_instance_extensions(args.window)
             .iter()
             .map(|e| e.as_ptr())
             .chain(consts::VALIDATION_ENABLED.then_some(vk::EXT_DEBUG_UTILS_EXTENSION.name.as_ptr()))
-            .chain(is_macos_portable.then_some(macos_extensions).into_iter().flatten())
+            .chain(
+                is_macos_portable
+                    .then_some(macos_extensions)
+                    .into_iter()
+                    .flatten(),
+            )
             .collect::<Vec<_>>();
 
         let flags = if is_macos_portable {
@@ -93,7 +96,11 @@ impl Newable for Instance {
                 }
             });
 
-        let instance = unsafe { entry.create_instance(&info, None) }.with_context(|| "Failed to create instance")?;
+        let instance = unsafe { args.entry.create_instance(&info, None) }
+            .with_context(|| "Failed to create Vulkan instance")?;
+
+        *args.messenger = unsafe { instance.create_debug_utils_messenger_ext(&debug_info, None) }
+            .with_context(|| "Failed to create Vulkan debug messenger")?;
 
         Ok(instance)
     }
