@@ -9,7 +9,6 @@ mod wrapper;
 
 pub use wrapper::AppWrapper;
 
-// --- Type Constraints
 mod sealed {
     pub trait Sealed {}
 }
