@@ -5,18 +5,14 @@ use anyhow::Result;
 use winit::event_loop::{ControlFlow, EventLoop};
 
 mod app;
-mod vulkan;
-
 use app::App;
 
 fn main() -> Result<()> {
     pretty_env_logger::init();
 
     let event_loop = EventLoop::new()?;
-    let mut app = App::default();
-
-    event_loop.set_control_flow(ControlFlow::Poll);
-    event_loop.run_app(&mut app).map_err(|e| anyhow::anyhow!(e))?;
+    let mut app_wrapper = app::AppWrapper::default();
+    event_loop.run_app(&mut app_wrapper)?;
 
     Ok(())
 }
