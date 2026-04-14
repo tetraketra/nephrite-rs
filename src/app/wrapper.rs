@@ -1,5 +1,9 @@
+use anyhow::Result;
 use winit::{
-    application::ApplicationHandler, event::WindowEvent, event_loop::ActiveEventLoop, window::WindowId,
+    application::ApplicationHandler,
+    event::WindowEvent,
+    event_loop::{ActiveEventLoop, EventLoop},
+    window::WindowId,
 };
 
 use crate::app::{App, Initialized, Uninitialized, vulkan::VulkanData, window::WindowData};
@@ -13,6 +17,14 @@ pub enum AppWrapper {
 impl Default for AppWrapper {
     fn default() -> Self {
         Self::Uninitialized(App::default())
+    }
+}
+
+impl AppWrapper {
+    pub fn run_default() -> Result<()> {
+        let mut app = Self::default();
+        let event_loop = EventLoop::new()?;
+        event_loop.run_app(&mut app).map_err(|e| anyhow::anyhow!(e))
     }
 }
 
