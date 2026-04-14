@@ -6,7 +6,7 @@ use vulkanalia_sys::DebugUtilsMessengerEXT;
 
 use crate::app::{
     Initialized, State, Uninitialized, consts,
-    traits::{ext::prelude::*, nicenew::prelude::*},
+    traits::{extensions::prelude::*, nicenew::prelude::*},
     window::{Window, WindowData},
 };
 

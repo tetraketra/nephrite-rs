@@ -1,2 +1,2 @@
-pub mod ext;
+pub mod extensions;
 pub mod nicenew;

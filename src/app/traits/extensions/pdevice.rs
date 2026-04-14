@@ -4,7 +4,7 @@ use vulkanalia::{
     vk::{self, InstanceV1_0},
 };
 
-use crate::app::traits::ext::qfamily::QFamilyExt;
+use crate::app::traits::extensions::qfamily::QFamilyExt;
 
 #[derive(Copy, Clone, Debug)]
 pub struct QueueFamilyIndices {
