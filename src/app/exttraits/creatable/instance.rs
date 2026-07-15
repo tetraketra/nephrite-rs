@@ -1,6 +1,5 @@
 use std::{collections::HashSet, ffi::CStr, os::raw::c_void};
 
-use anyhow::{Context as _Ctx, Result};
 use tap::Pipe;
 use vulkanalia::{
     Instance,
@@ -11,18 +10,18 @@ use vulkanalia::{
 use vulkanalia_sys::DebugUtilsMessengerEXT;
 use winit::window::Window;
 
-use crate::app::{consts, traits::nicenew::NiceNew};
+use crate::app::{AppError, AppResult, consts, exttraits::Creatable};
 
-pub struct NNInstance<'a> {
-    pub window:    &'a Window,
-    pub entry:     &'a Entry,
-    pub messenger: &'a mut DebugUtilsMessengerEXT,
+pub struct InstanceArgs<'a> {
+    pub window: &'a Window,
+    pub entry:  &'a Entry,
 }
 
-impl<'a> NiceNew<'a> for Instance {
-    type Args = NNInstance<'a>;
+impl<'a> Creatable<'a> for Instance {
+    type Args = InstanceArgs<'a>;
+    type Ret = (Self, DebugUtilsMessengerEXT);
 
-    fn nice_new(args: Self::Args) -> Result<Self> {
+    fn create(args: Self::Args) -> AppResult<Self::Ret> {
         let application_info = vk::ApplicationInfo::builder()
             .application_name(b"Nephrite\0")
             .application_version(vk::make_version(1, 4, 0))
@@ -30,14 +29,15 @@ impl<'a> NiceNew<'a> for Instance {
             .engine_version(vk::make_version(1, 0, 0))
             .api_version(vk::make_version(1, 4, 0));
 
-        let _available_layers = unsafe { args.entry.enumerate_instance_layer_properties() }
-            .with_context(|| "Failed to enumerate instance layer properties")?
+        let _available_layers = unsafe { args.entry.enumerate_instance_layer_properties() }?
             .iter()
             .map(|l| l.layer_name)
             .collect::<HashSet<_>>()
             .pipe(|al| {
                 if consts::VALIDATION_ENABLED && !al.contains(&consts::VALIDATION_LAYER) {
-                    Err(anyhow::anyhow!("Validation layer requested but not supported"))
+                    Err(AppError::Validation(
+                        "Validation layer requested but not supported".into(),
+                    ))
                 } else {
                     Ok(al)
                 }
@@ -83,26 +83,24 @@ impl<'a> NiceNew<'a> for Instance {
             )
             .user_callback(Some(debug_callback));
 
-        let info = vk::InstanceCreateInfo::builder()
+        let create_info = vk::InstanceCreateInfo::builder()
             .application_info(&application_info)
             .enabled_extension_names(&extensions)
             .enabled_layer_names(&layers)
             .flags(flags)
-            .pipe(|info| {
+            .pipe(|create_info| {
                 if consts::VALIDATION_ENABLED {
-                    info.push_next(&mut debug_info)
+                    create_info.push_next(&mut debug_info)
                 } else {
-                    info
+                    create_info
                 }
             });
 
-        let instance = unsafe { args.entry.create_instance(&info, None) }
-            .with_context(|| "Failed to create Vulkan instance")?;
+        let instance = unsafe { args.entry.create_instance(&create_info, None) }?;
 
-        *args.messenger = unsafe { instance.create_debug_utils_messenger_ext(&debug_info, None) }
-            .with_context(|| "Failed to create Vulkan debug messenger")?;
+        let messenger = unsafe { instance.create_debug_utils_messenger_ext(&debug_info, None) }?;
 
-        Ok(instance)
+        Ok((instance, messenger))
     }
 }
 

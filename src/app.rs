@@ -2,11 +2,13 @@ use anyhow::Result;
 use winit::event_loop::ActiveEventLoop;
 
 mod consts;
-mod traits;
+mod errors;
+mod exttraits;
 mod vulkan;
 mod window;
 mod wrapper;
 
+pub use errors::{AppError, AppResult};
 pub use wrapper::AppWrapper;
 
 mod sealed {
@@ -26,11 +28,7 @@ impl sealed::Sealed for Initialized {}
 impl State for Initialized {}
 
 #[derive(Default)]
-pub struct App<WS, VS, WD = (), VD = ()>
-where
-    WS: State,
-    VS: State,
-{
+pub struct App<WS: State, VS: State, WD = (), VD = ()> {
     pub window: window::Window<WS, WD>,
     pub vulkan: vulkan::Vulkan<VS, VD>,
 }

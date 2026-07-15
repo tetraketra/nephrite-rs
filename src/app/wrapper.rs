@@ -8,6 +8,7 @@ use winit::{
 
 use crate::app::{App, Initialized, Uninitialized, vulkan::VulkanData, window::WindowData};
 
+#[allow(clippy::large_enum_variant)] // Needed for strict `winit` impl limitations.
 pub enum AppWrapper {
     Uninitialized(App<Uninitialized, Uninitialized>),
     Initialized(App<Initialized, Initialized, WindowData, VulkanData>),

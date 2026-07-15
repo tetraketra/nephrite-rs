@@ -1,12 +1,10 @@
 use std::marker::PhantomData;
 
-use anyhow::{Context as _Ctx, Result};
 use vulkanalia::{prelude::v1_4::*, vk::ExtDebugUtilsExtensionInstanceCommands};
-use vulkanalia_sys::DebugUtilsMessengerEXT;
 
 use crate::app::{
-    Initialized, State, Uninitialized, consts,
-    traits::{extensions::prelude::*, nicenew::prelude::*},
+    AppError, AppResult, Initialized, State, Uninitialized, consts,
+    exttraits::{Creatable, InstanceArgs, PDeviceExt, QueueFamilyIndices},
     window::{Window, WindowData},
 };
 
@@ -34,19 +32,20 @@ impl<S: State, D: Default> Default for Vulkan<S, D> {
 }
 
 impl Vulkan<Uninitialized, ()> {
-    pub fn initialize(window: &Window<Initialized, WindowData>) -> Result<Vulkan<Initialized, VulkanData>> {
-        let mut messenger = DebugUtilsMessengerEXT::default();
-        let entry = Entry::nice_new(()).with_context(|| "Failed to create Vulkan entry")?;
-        let instance = Instance::nice_new(NNInstance {
-            window:    &window.data.window,
-            entry:     &entry,
-            messenger: &mut messenger,
-        })
-        .with_context(|| "Failed to create Vulkan instance")?;
+    pub fn initialize(
+        window: &Window<Initialized, WindowData>
+    ) -> AppResult<Vulkan<Initialized, VulkanData>> {
+        let entry = Entry::create(())?;
+
+        let (instance, messenger) = Instance::create(InstanceArgs {
+            window: &window.data.window,
+            entry:  &entry,
+        })?;
+
         let (pdevice, qfamily) = unsafe { instance.enumerate_physical_devices() }?
             .into_iter()
             .find_map(|pd| pd.get_supported(&instance).ok().map(|qf| (pd, qf)))
-            .ok_or_else(|| anyhow::anyhow!("No suitable starter phyiscal device found"))?;
+            .ok_or_else(|| AppError::Hardware("no supported physical devices".into()))?;
 
         Ok(Vulkan {
             data: VulkanData {
@@ -66,7 +65,7 @@ impl Vulkan<Initialized, VulkanData> {
     pub fn render(
         &mut self,
         window: &Window<Initialized, WindowData>,
-    ) -> Result<()> {
+    ) -> AppResult<()> {
         // Has access to data.
         Ok(())
     }
