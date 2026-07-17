@@ -53,10 +53,10 @@ impl PDeviceExt for vk::PhysicalDevice {
         let qfprops = unsafe { instance.get_physical_device_queue_family_properties(self) };
 
         Ok(QueueFamilyIndices {
-            graphics:   qfprops.get_flag(vk::QueueFlags::GRAPHICS, "GRAPHICS")?,
-            compute:    qfprops.get_flag(vk::QueueFlags::COMPUTE, "COMPUTE")?,
-            transfer:   qfprops.get_flag(vk::QueueFlags::TRANSFER, "TRANSFER")?,
-            sparsebind: qfprops.get_flag(vk::QueueFlags::SPARSE_BINDING, "SPARSE_BINDING")?,
+            graphics:   qfprops.get_flag(vk::QueueFlags::GRAPHICS)?,
+            compute:    qfprops.get_flag(vk::QueueFlags::COMPUTE)?,
+            transfer:   qfprops.get_flag(vk::QueueFlags::TRANSFER)?,
+            sparsebind: qfprops.get_flag(vk::QueueFlags::SPARSE_BINDING)?,
         })
     }
 }
